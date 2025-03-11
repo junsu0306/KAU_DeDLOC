@@ -91,8 +91,10 @@ class CollaborationArguments(AveragerArguments, CollaborativeOptimizerArguments,
 @dataclass
 class DatasetArguments:
     dataset_path: Optional[str] = field(
-        default="data/albert_tokenized_wikitext2", metadata={"help": "Path to the tokenized dataset"}
+        default="data/albert_tokenized_wikitext",  # 기존 "data/albert_tokenized_wikitext2"에서 수정
+        metadata={"help": "Path to the tokenized dataset"}
     )
+
     tokenizer_path: Optional[str] = field(default="data/tokenizer", metadata={"help": "Path to the tokenizer"})
     config_path: Optional[str] = field(
         default="https://s3.amazonaws.com/models.huggingface.co/bert/albert-large-v2-config.json",
