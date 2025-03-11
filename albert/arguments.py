@@ -91,7 +91,7 @@ class CollaborationArguments(AveragerArguments, CollaborativeOptimizerArguments,
 @dataclass
 class DatasetArguments:
     dataset_path: Optional[str] = field(
-        default="data/albert_tokenized_wikitext", metadata={"help": "Path to the tokenized dataset"}
+        default="data/albert_tokenized_wikitext2", metadata={"help": "Path to the tokenized dataset"}
     )
     tokenizer_path: Optional[str] = field(default="data/tokenizer", metadata={"help": "Path to the tokenizer"})
     config_path: Optional[str] = field(
