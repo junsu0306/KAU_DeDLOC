@@ -97,7 +97,7 @@ class DatasetArguments:
 
     tokenizer_path: Optional[str] = field(default="data/tokenizer", metadata={"help": "Path to the tokenizer"})
     config_path: Optional[str] = field(
-        default="https://s3.amazonaws.com/models.huggingface.co/bert/albert-large-v2-config.json",
+        default="https://huggingface.co/albert-base-v2/resolve/main/config.json",
         metadata={"help": "Path to the model config"},
     )
     cache_dir: Optional[str] = field(default="data", metadata={"help": "Path to the cache"})
@@ -106,20 +106,20 @@ class DatasetArguments:
 @dataclass
 class AlbertTrainingArguments(TrainingArguments):
     dataloader_num_workers: int = 4
-    per_device_train_batch_size: int = 4
-    per_device_eval_batch_size: int = 4
+    per_device_train_batch_size: int = 8  #  4 → 8 정도로 올림림
+    per_device_eval_batch_size: int = 8
     gradient_accumulation_steps: int = 2
     seq_length: int = 512
 
-    max_steps: int = 1_000_000  # Albert is actually ready after 125000 steps
-    learning_rate: float = 0.00176
+    max_steps: int = 125_000  # 기존 1M → 125k로 조정 (실제 논문 값)
+    learning_rate: float = 0.0003  # 기존 0.00176 → 0.0003으로 조정
     warmup_steps: int = 5000
     adam_epsilon: float = 1e-6
     weight_decay: float = 0.01
     max_grad_norm: float = 1.0
     clamp_value: float = 10000.0
 
-    fp16: bool = True
+    fp16: bool = True  # 처음에는 False로 설정 후 문제 없으면 True로 변경
     fp16_opt_level: str = "O2"
     do_train: bool = True
 
