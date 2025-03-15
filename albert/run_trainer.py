@@ -23,7 +23,7 @@ from transformers.optimization import get_linear_schedule_with_warmup
 from transformers.trainer_utils import is_main_process
 from transformers.trainer import Trainer
 from torch_optimizer import Lamb
-from torch.optim import SparseAdam
+
 
 
 import hivemind
@@ -72,11 +72,11 @@ def get_model(training_args, config, tokenizer):
     return model
 
 
+
 def get_optimizer_and_scheduler(training_args, model):
     """
-    Lamb → SparseAdam 교체
+    기존 Lamb 옵티마이저를 설정하고 스케줄러를 반환
     """
-    # 1) no_decay 배열 등 파라미터 그룹 설정 그대로 유지
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
         {
@@ -89,14 +89,18 @@ def get_optimizer_and_scheduler(training_args, model):
         },
     ]
 
-    # 2) SparseAdam 적용
-    opt = SparseAdam(
+    # 1. 옵티마이저 설정(Lamb)
+    opt = Lamb(
         optimizer_grouped_parameters,
         lr=training_args.learning_rate,
-        eps=training_args.adam_epsilon  # 보통 1e-08 정도
+        betas=(training_args.adam_beta1, training_args.adam_beta2),
+        eps=training_args.adam_epsilon,
+        weight_decay=training_args.weight_decay,
+        clamp_value=10000.0,
+        debias=True,
     )
 
-    # 3) Scheduler는 기존과 동일하게
+    # 2. 스케줄러 설정 (예: get_linear_schedule_with_warmup)
     scheduler = get_linear_schedule_with_warmup(
         opt,
         num_warmup_steps=training_args.warmup_steps,
@@ -104,6 +108,7 @@ def get_optimizer_and_scheduler(training_args, model):
     )
 
     return opt, scheduler
+
 
 
 class CollaborativeCallback(transformers.TrainerCallback):
