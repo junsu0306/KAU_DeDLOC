@@ -44,7 +44,7 @@ class CoordinatorArguments(BaseTrainingArguments):
         default=5, metadata={"help": "Coordinator will load and save state from peers once every that many steps"}
     )
     model_config_path: str = field(
-        default="https://s3.amazonaws.com/models.huggingface.co/bert/albert-large-v2-config.json",
+        default="https://s3.amazonaws.com/models.huggingface.co/bert/albert-base-v2-config.json",
         metadata={"help": "Path to the model config"},
     )
     repo_path: Optional[str] = field(

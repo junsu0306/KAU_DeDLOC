@@ -90,7 +90,7 @@ def tokenize_function(tokenizer, examples):
 if __name__ == "__main__":
     random.seed(0)
     nltk.download("punkt")
-    tokenizer = AlbertTokenizerFast.from_pretrained("albert-large-v2")
+    tokenizer = AlbertTokenizerFast.from_pretrained("albert-base-v2")
     wikitext = load_dataset("wikitext", "wikitext-2-v1", cache_dir="./data/cache")
 
     tokenized_datasets = wikitext.map(
