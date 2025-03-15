@@ -7,7 +7,7 @@ from typing import Optional
 
 import torch
 from torch_optimizer import Lamb
-from transformers import AlbertForPreTraining, AlbertConfig, HfArgumentParser
+from transformers import BertForPreTraining, BertConfig, HfArgumentParser
 import wandb
 from whatsmyip.providers import GoogleDnsProvider
 from whatsmyip.ip import get_ip
@@ -43,10 +43,12 @@ class CoordinatorArguments(BaseTrainingArguments):
     save_checkpoint_step_interval: int = field(
         default=5, metadata={"help": "Coordinator will load and save state from peers once every that many steps"}
     )
+   # ALBERT → BERT-tiny 변경
     model_config_path: str = field(
-        default="https://s3.amazonaws.com/models.huggingface.co/bert/albert-large-v2-config.json",
+        default="https://huggingface.co/google/bert_uncased_L-2_H-128_A-2/resolve/main/config.json",
         metadata={"help": "Path to the model config"},
     )
+
     repo_path: Optional[str] = field(
         default=None,
         metadata={"help": "Path to HuggingFace repo in which coordinator will upload the model and optimizer states"},
@@ -69,8 +71,9 @@ class CheckpointHandler:
         self.upload_interval = coordinator_args.upload_interval
         self.previous_step = -1
 
-        config = AlbertConfig.from_pretrained(coordinator_args.model_config_path)
-        self.model = AlbertForPreTraining(config)
+        config = BertConfig.from_pretrained(coordinator_args.model_config_path)
+        self.model = BertForPreTraining(config)
+
 
         no_decay = ["bias", "LayerNorm.weight"]
         optimizer_grouped_parameters = [
@@ -86,7 +89,7 @@ class CheckpointHandler:
 
         opt = Lamb(
             optimizer_grouped_parameters,
-            lr=0.00176,
+            lr=0.0005,  # BERT-tiny에 맞게 학습률 조정
             weight_decay=0.01,
             clamp_value=10000.0,
             debias=True,

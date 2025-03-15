@@ -91,25 +91,28 @@ class CollaborationArguments(AveragerArguments, CollaborativeOptimizerArguments,
 @dataclass
 class DatasetArguments:
     dataset_path: Optional[str] = field(
-        default="data/albert_tokenized_wikitext",  # 기존 "data/albert_tokenized_wikitext2"에서 수정
+        default="data/bert_tiny_tokenized_wikitext",  # 기존 ALBERT에서 BERT-tiny로 변경
         metadata={"help": "Path to the tokenized dataset"}
     )
-
-    tokenizer_path: Optional[str] = field(default="data/tokenizer", metadata={"help": "Path to the tokenizer"})
+    tokenizer_path: Optional[str] = field(
+        default="https://huggingface.co/google/bert_uncased_L-2_H-128_A-2/resolve/main/tokenizer.json",
+        metadata={"help": "Path to the tokenizer"}
+    )
     config_path: Optional[str] = field(
-        default="https://huggingface.co/albert-base-v2/resolve/main/config.json",
-        metadata={"help": "Path to the model config"},
+        default="https://huggingface.co/google/bert_uncased_L-2_H-128_A-2/resolve/main/config.json",
+        metadata={"help": "Path to the model config"}
     )
     cache_dir: Optional[str] = field(default="data", metadata={"help": "Path to the cache"})
 
 
+
 @dataclass
-class AlbertTrainingArguments(TrainingArguments):
+class BertTrainingArguments(TrainingArguments):
     dataloader_num_workers: int = 4
-    per_device_train_batch_size: int = 8  #  4 → 8 정도로 올림림
-    per_device_eval_batch_size: int = 8
-    gradient_accumulation_steps: int = 2
-    seq_length: int = 512
+    per_device_train_batch_size: int = 16  # BERT-tiny는 작은 모델이므로 배치 크기 증가 가능
+    per_device_eval_batch_size: int = 16
+    gradient_accumulation_steps: int = 1  # 작은 모델이므로 gradient accumulation을 낮춰도 됨
+    seq_length: int = 128  # BERT-tiny는 짧은 문장에 최적화되어 있으므로 128로 조정
 
     max_steps: int = 125_000  # 기존 1M → 125k로 조정 (실제 논문 값)
     learning_rate: float = 0.0003  # 기존 0.00176 → 0.0003으로 조정

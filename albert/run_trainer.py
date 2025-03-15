@@ -15,9 +15,7 @@ from transformers import (
     HfArgumentParser,
     TrainingArguments,
     DataCollatorForLanguageModeling,
-    AlbertTokenizerFast,
-    AlbertConfig,
-    AlbertForPreTraining,
+
 )
 from transformers.optimization import get_linear_schedule_with_warmup
 from transformers.trainer_utils import is_main_process
@@ -27,8 +25,9 @@ from torch_optimizer import Lamb
 
 
 import hivemind
-from arguments import CollaborationArguments, DatasetArguments, AlbertTrainingArguments
+from arguments import CollaborationArguments, DatasetArguments, BertTrainingArguments
 import metrics_utils
+from transformers import BertConfig, BertTokenizerFast, BertForPreTraining
 
 
 logger = logging.getLogger(__name__)
@@ -63,10 +62,10 @@ def get_model(training_args, config, tokenizer):
 
     if latest_checkpoint_dir is not None:
         logger.info(f"Loading model from {latest_checkpoint_dir}")
-        model = AlbertForPreTraining.from_pretrained(latest_checkpoint_dir)
+        model = BertForPreTraining.from_pretrained(latest_checkpoint_dir)
     else:
         logger.info(f"Training from scratch")
-        model = AlbertForPreTraining(config)
+        model = BertForPreTraining(config)
         model.resize_token_embeddings(len(tokenizer))
 
     return model
@@ -219,7 +218,7 @@ class NoOpScheduler(LRSchedulerBase):
 
 
 def main():
-    parser = HfArgumentParser((AlbertTrainingArguments, DatasetArguments, CollaborationArguments))
+    parser = HfArgumentParser((BertTrainingArguments, DatasetArguments, CollaborationArguments))
     training_args, dataset_args, collaboration_args = parser.parse_args_into_dataclasses()
 
     logger.info(f"Found {len(collaboration_args.initial_peers)} initial peers: {collaboration_args.initial_peers}")
@@ -232,8 +231,8 @@ def main():
     # Set seed before initializing model.
     set_seed(training_args.seed)
 
-    config = AlbertConfig.from_pretrained(dataset_args.config_path, cache_dir=dataset_args.cache_dir)
-    tokenizer = AlbertTokenizerFast.from_pretrained(dataset_args.tokenizer_path, cache_dir=dataset_args.cache_dir)
+    config = BertConfig.from_pretrained(dataset_args.config_path, cache_dir=dataset_args.cache_dir)
+    tokenizer = BertTokenizerFast.from_pretrained(dataset_args.tokenizer_path, cache_dir=dataset_args.cache_dir)
     model = get_model(training_args, config, tokenizer)
     model.to(training_args.device)
 
