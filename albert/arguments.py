@@ -95,7 +95,7 @@ class DatasetArguments:
         metadata={"help": "Path to the tokenized dataset"}
     )
     tokenizer_path: Optional[str] = field(
-        default="https://huggingface.co/google/bert_uncased_L-2_H-128_A-2/resolve/main/tokenizer.json",
+         default="google/bert_uncased_L-2_H-128_A-2",  # ✅ 모델 ID로 변경
         metadata={"help": "Path to the tokenizer"}
     )
     config_path: Optional[str] = field(
