@@ -104,13 +104,13 @@ if __name__ == "__main__":
     random.seed(0)
     nltk.download("punkt")
     
-    # ✅ BERT-tiny 토크나이저 로드
+    #  BERT-tiny 토크나이저 로드
     tokenizer = BertTokenizerFast.from_pretrained("google/bert_uncased_L-2_H-128_A-2")
 
-    # ✅ WikiText 데이터셋 로드 (위키피디아 텍스트 데이터)
+    #  WikiText 데이터셋 로드 
     wikitext = load_dataset("wikitext", "wikitext-2-v1", cache_dir="./data/cache")
 
-    # ✅ BERT-tiny에 맞게 데이터셋을 토큰화
+    #  BERT-tiny에 맞게 데이터셋을 토큰화
     tokenized_datasets = wikitext.map(
         partial(tokenize_function, tokenizer),
         batched=True,
@@ -118,6 +118,6 @@ if __name__ == "__main__":
         remove_columns=["text"],  # 원본 텍스트 삭제
     )
 
-    # ✅ BERT-tiny용 토큰화된 데이터 저장
+    #  BERT-tiny용 토큰화된 데이터 저장
     tokenized_datasets.save_to_disk("./data/bert_tiny_tokenized_wikitext")
     tokenizer.save_pretrained("./data/tokenizer_bert_tiny")
