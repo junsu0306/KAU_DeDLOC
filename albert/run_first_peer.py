@@ -16,9 +16,9 @@ from arguments import BaseTrainingArguments, CollaborativeOptimizerArguments, Av
 import hivemind
 from hivemind.utils.logging import get_logger
 import metrics_utils
+from transformers import BertForMaskedLM, BertConfig
 
-
-logger = get_logger(__name__)
+logger = get_logger(__name__).
 
 
 @dataclass
@@ -72,7 +72,7 @@ class CheckpointHandler:
         self.previous_step = -1
 
         config = BertConfig.from_pretrained(coordinator_args.model_config_path)
-        self.model = BertForPreTraining(config)
+        self.model = BertForMaskedLM(config)
 
 
         no_decay = ["bias", "LayerNorm.weight"]
