@@ -18,7 +18,7 @@ from hivemind.utils.logging import get_logger
 import metrics_utils
 from transformers import BertForMaskedLM, BertConfig
 
-logger = get_logger(__name__).
+logger = get_logger(__name__)
 
 
 @dataclass
