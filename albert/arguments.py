@@ -114,7 +114,7 @@ class BertTrainingArguments(TrainingArguments):
     gradient_accumulation_steps: int = 1  # 작은 모델이므로 gradient accumulation을 낮춰도 됨
     seq_length: int = 128  # BERT-tiny는 짧은 문장에 최적화되어 있으므로 128로 조정
 
-    max_steps: int = 125_000  # 기존 1M → 125k로 조정 (실제 논문 값)
+    max_steps: int = 500_000  # 기존에서 더 늘림림
     learning_rate: float = 0.0003  # 기존 0.00176 → 0.0003으로 조정
     warmup_steps: int = 5000
     adam_epsilon: float = 1e-6
@@ -126,7 +126,7 @@ class BertTrainingArguments(TrainingArguments):
     fp16_opt_level: str = "O2"
     do_train: bool = True
 
-    logging_steps: int = 100
+    logging_steps: int = 10
     save_total_limit: int = 2
     save_steps: int = 500
 
