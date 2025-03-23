@@ -22,6 +22,7 @@ from transformers.trainer_utils import is_main_process
 from transformers.trainer import Trainer
 from torch_optimizer import Lamb
 
+from transformers import BertForMaskedLM
 
 
 import hivemind
@@ -55,20 +56,20 @@ def setup_logging(training_args):
 
 
 def get_model(training_args, config, tokenizer):
-    # Find latest checkpoint in output_dir
     output_dir = Path(training_args.output_dir)
     logger.info(f'Checkpoint dir {output_dir}, contents {list(output_dir.glob("checkpoint*"))}')
     latest_checkpoint_dir = max(output_dir.glob("checkpoint*"), default=None, key=os.path.getctime)
 
     if latest_checkpoint_dir is not None:
         logger.info(f"Loading model from {latest_checkpoint_dir}")
-        model = BertForPreTraining.from_pretrained(latest_checkpoint_dir)
+        model = BertForMaskedLM.from_pretrained(latest_checkpoint_dir)
     else:
         logger.info(f"Training from scratch")
-        model = BertForPreTraining(config)
+        model = BertForMaskedLM(config)
         model.resize_token_embeddings(len(tokenizer))
 
     return model
+
 
 
 
