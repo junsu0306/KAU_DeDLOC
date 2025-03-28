@@ -16,6 +16,9 @@ class PartialStaleCollaborativeOptimizer(BaseCollaborativeOptimizer):
          이전 iteration buffer가 있다면 그걸 지금 apply
     """
     def __init__(self, partial_stale=False, *args, **kwargs):
+         # fix: ensure 'start' key is present
+        if 'start' not in kwargs:
+            kwargs['start'] = True
         super().__init__(*args, **kwargs)
         self.partial_stale = partial_stale
         self.stale_grad_buffer = None  # 이전 iteration에서의 averaged gradient 저장
