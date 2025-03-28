@@ -30,6 +30,7 @@ from arguments import CollaborationArguments, DatasetArguments, BertTrainingArgu
 import metrics_utils
 from transformers import BertConfig, BertTokenizerFast, BertForPreTraining
 
+from partial_stale_optimzer import PartialStaleCollaborativeOptimizer
 
 logger = logging.getLogger(__name__)
 LRSchedulerBase = getattr(torch.optim.lr_scheduler, "_LRScheduler", None)
@@ -258,25 +259,45 @@ def main():
     adjusted_target_batch_size = collaboration_args_dict.pop("target_batch_size") - collaboration_args_dict.pop(
         "batch_size_lead"
     )
+    
+  # ============ Partial Stale 분기 =============
+    from hivemind import CollaborativeOptimizer  # 원본
 
-    collaborative_optimizer = hivemind.CollaborativeOptimizer(
-        opt=opt,
-        dht=dht,
-        scheduler=scheduler,
-        prefix=collaboration_args_dict.pop("experiment_prefix"),
-        compression_type=hivemind.utils.CompressionType.Value(collaboration_args_dict.pop("compression")),
-        batch_size_per_step=total_batch_size_per_step,
-        throughput=collaboration_args_dict.pop("bandwidth"),
-        target_batch_size=adjusted_target_batch_size,
-        client_mode=collaboration_args_dict.pop("client_mode"),
-        verbose=True,
-        start=True,
-        **collaboration_args_dict,
-    )
+    if training_args.partial_stale:
+        logger.info("Using PartialStaleCollaborativeOptimizer (1-step delay).")
+        collaborative_optimizer = PartialStaleCollaborativeOptimizer(
+            partial_stale=True,
+            opt=opt,
+            dht=dht,
+            prefix=collaboration_args_dict.pop("experiment_prefix"),
+            target_batch_size=adjusted_target_batch_size,
+            batch_size_per_step=total_batch_size_per_step,
+            scheduler=scheduler,
+            # hive args
+            # compression_type=..., etc. (아래 lines 처럼)
+            compression_type=hivemind.utils.CompressionType.Value(collaboration_args_dict.pop("compression")),
+            **collaboration_args_dict,
+        )
+    else:
+        logger.info("Using normal hivemind.CollaborativeOptimizer.")
+        collaborative_optimizer = hivemind.CollaborativeOptimizer(
+            opt=opt,
+            dht=dht,
+            scheduler=scheduler,
+            prefix=collaboration_args_dict.pop("experiment_prefix"),
+            compression_type=hivemind.utils.CompressionType.Value(collaboration_args_dict.pop("compression")),
+            batch_size_per_step=total_batch_size_per_step,
+            throughput=collaboration_args_dict.pop("bandwidth"),
+            target_batch_size=adjusted_target_batch_size,
+            client_mode=collaboration_args_dict.pop("client_mode"),
+            verbose=True,
+            start=True,
+            **collaboration_args_dict,
+        )
+    # =============================================
 
     class TrainerWithIndependentShuffling(Trainer):
         def get_train_dataloader(self) -> DataLoader:
-            """Shuffle data independently for each peer to avoid duplicating batches [important for quality]"""
             torch.manual_seed(hash(local_public_key))
             return super().get_train_dataloader()
 
@@ -288,19 +309,14 @@ def main():
         train_dataset=tokenized_datasets["train"] if training_args.do_train else None,
         eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
         optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
-        callbacks=[
-            CollaborativeCallback(dht, collaborative_optimizer, model, local_public_key, statistics_expiration)
-        ],
+        callbacks=[CollaborativeCallback(dht, collaborative_optimizer, model, local_public_key, statistics_expiration)],
     )
     trainer.remove_callback(transformers.trainer_callback.PrinterCallback)
     trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
 
     # Training
     if training_args.do_train:
-        latest_checkpoint_dir = max(
-            Path(training_args.output_dir).glob("checkpoint*"), default=None, key=os.path.getctime
-        )
-
+        latest_checkpoint_dir = max(Path(training_args.output_dir).glob("checkpoint*"), default=None, key=os.path.getctime)
         trainer.train(model_path=latest_checkpoint_dir)
 
 

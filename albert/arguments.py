@@ -133,3 +133,9 @@ class BertTrainingArguments(TrainingArguments):
     save_steps: int = 500
 
     output_dir: str = "outputs"
+
+    #Parital Staleness 추가
+    partial_stale: bool = field(
+        default=False,
+        metadata={"help": "If True, uses a 1-step delayed gradient update for partial staleness."}
+    )
