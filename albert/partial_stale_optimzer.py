@@ -16,6 +16,7 @@ class PartialStaleCollaborativeOptimizer(BaseCollaborativeOptimizer):
          이전 iteration buffer가 있다면 그걸 지금 apply
     """
     def __init__(self, partial_stale=False, *args, **kwargs):
+        kwargs.pop("bandwidth", None)
          # fix: ensure 'start' key is present
         if 'start' not in kwargs:
             kwargs['start'] = True
