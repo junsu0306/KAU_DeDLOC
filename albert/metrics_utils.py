@@ -12,6 +12,8 @@ class LocalMetrics(BaseModel):
     samples_accumulated: conint(ge=0, strict=True)
     loss: StrictFloat
     mini_steps: conint(ge=0, strict=True)
+    accuracy: Optional[StrictFloat] = None  # ⬅️ 여기에 accuracy 필드 추가
+
 
 
 class MetricSchema(BaseModel):

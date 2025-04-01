@@ -200,6 +200,12 @@ if __name__ == "__main__":
                     sum_perf += item.samples_per_second
                     num_samples += item.samples_accumulated
                     sum_mini_steps += item.mini_steps
+                    if hasattr(item, "accuracy") and item.accuracy is not None:
+                         total_accuracy += item.accuracy
+                         accuracy_count += 1
+
+                avg_accuracy = total_accuracy / accuracy_count if accuracy_count > 0 else None
+
                 current_loss = sum_loss / sum_mini_steps
 
                 if coordinator_args.wandb_project is not None:
@@ -210,6 +216,7 @@ if __name__ == "__main__":
                             "samples": num_samples,
                             "performance": sum_perf,
                             "step": latest_step,
+                            "accuracy": avg_accuracy,
                         }
                     )
                 if checkpoint_handler.is_time_to_save_state(current_step):
