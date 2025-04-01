@@ -354,6 +354,9 @@ def main():
         logger.info("Running evaluation...")
         eval_metrics = trainer.evaluate()
         logger.info(f"Evaluation results: {eval_metrics}")
+    
+        if "accuracy" in eval_metrics:
+            wandb.log({"eval/accuracy": eval_metrics["accuracy"]})
 
 
 if __name__ == "__main__":
