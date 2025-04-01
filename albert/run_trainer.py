@@ -341,9 +341,7 @@ def main():
             torch.manual_seed(hash(local_public_key))
             return super().get_train_dataloader()
         
-      
-
-    # 1. 콜백 먼저 생성
+      # 1. 콜백 먼저 생성
     collab_callback = CollaborativeCallback(
         dht=dht,
         optimizer=collaborative_optimizer,
@@ -351,7 +349,7 @@ def main():
         local_public_key=local_public_key,
         statistics_expiration=statistics_expiration,
         trainer=None  # 아직 trainer 없음
-    )
+    )   
 
 # 2. trainer 생성 시 콜백 전달
     trainer = TrainerWithIndependentShuffling(
@@ -360,8 +358,8 @@ def main():
         tokenizer=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
-        train_dataset=...,
-        eval_dataset=...,
+        train_dataset=tokenized_datasets["train"] if training_args.do_train else None,
+        eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
         optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
         callbacks=[collab_callback],
     )
