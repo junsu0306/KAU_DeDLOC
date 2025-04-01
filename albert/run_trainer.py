@@ -176,7 +176,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
                 
              # ⬇️ 여기에 주기적 evaluation 추가
                 accuracy = None
-                trainer = kwargs.get("trainer", None)
+                
                 if self.trainer is not None and self.collaborative_optimizer.local_step % 2 == 0:
                     eval_metrics = trainer.evaluate()
                     accuracy = eval_metrics.get("accuracy", None)
