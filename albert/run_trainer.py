@@ -297,21 +297,24 @@ def main():
         )
     # =============================================
 
+
+    def compute_metrics(eval_pred):
+        predictions, labels = eval_pred
+        # prediction logits에서 argmax
+        pred_ids = predictions.argmax(-1)
+        # -100 (ignore_index) 무시하고 정확도 계산
+        mask = labels != -100
+        correct = (pred_ids[mask] == labels[mask]).sum()
+        total = mask.sum()
+        accuracy = (correct / total).item() if total != 0 else 0.0
+        return {"accuracy": accuracy}
+
     class TrainerWithIndependentShuffling(Trainer):
         def get_train_dataloader(self) -> DataLoader:
             torch.manual_seed(hash(local_public_key))
             return super().get_train_dataloader()
         
-        def compute_metrics(eval_pred):
-            predictions, labels = eval_pred
-            # prediction logits에서 argmax
-            pred_ids = predictions.argmax(-1)
-            # -100 (ignore_index) 무시하고 정확도 계산
-            mask = labels != -100
-            correct = (pred_ids[mask] == labels[mask]).sum()
-            total = mask.sum()
-            accuracy = (correct / total).item() if total != 0 else 0.0
-            return {"accuracy": accuracy}
+      
 
     trainer = TrainerWithIndependentShuffling(
         model=model,
