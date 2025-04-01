@@ -21,6 +21,7 @@ from transformers.optimization import get_linear_schedule_with_warmup
 from transformers.trainer_utils import is_main_process
 from transformers.trainer import Trainer
 from torch_optimizer import Lamb
+from sklearn.metrics import accuracy_score
 
 from transformers import BertForMaskedLM
 
@@ -300,12 +301,24 @@ def main():
         def get_train_dataloader(self) -> DataLoader:
             torch.manual_seed(hash(local_public_key))
             return super().get_train_dataloader()
+        
+        def compute_metrics(eval_pred):
+            predictions, labels = eval_pred
+            # prediction logits에서 argmax
+            pred_ids = predictions.argmax(-1)
+            # -100 (ignore_index) 무시하고 정확도 계산
+            mask = labels != -100
+            correct = (pred_ids[mask] == labels[mask]).sum()
+            total = mask.sum()
+            accuracy = (correct / total).item() if total != 0 else 0.0
+            return {"accuracy": accuracy}
 
     trainer = TrainerWithIndependentShuffling(
         model=model,
         args=training_args,
         tokenizer=tokenizer,
         data_collator=data_collator,
+        compute_metrics=compute_metrics,  # 추가
         train_dataset=tokenized_datasets["train"] if training_args.do_train else None,
         eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
         optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
