@@ -194,17 +194,20 @@ if __name__ == "__main__":
                 num_samples = 0
                 sum_perf = 0
                 sum_mini_steps = 0
+                sum_accuracy = 0.0
+                accuracy_count = 0
+
                 for item in metrics:
                     sum_loss += item.loss
                     alive_peers += 1
                     sum_perf += item.samples_per_second
                     num_samples += item.samples_accumulated
                     sum_mini_steps += item.mini_steps
-                    if hasattr(item, "accuracy") and item.accuracy is not None:
-                         total_accuracy += item.accuracy
-                         accuracy_count += 1
+                    if item.accuracy is not None:
+                        sum_accuracy += item.accuracy
+                        accuracy_count += 1
 
-                avg_accuracy = total_accuracy / accuracy_count if accuracy_count > 0 else None
+                avg_accuracy = sum_accuracy / accuracy_count if accuracy_count > 0 else None
 
                 current_loss = sum_loss / sum_mini_steps
 
