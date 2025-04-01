@@ -152,6 +152,19 @@ class CollaborativeCallback(transformers.TrainerCallback):
         if state.log_history:
             self.loss += state.log_history[-1]["loss"]
             self.steps += 1
+            # ⬇️ 여기에 accuracy 계산 추가
+            if "labels" in state.log_history[-1] and "predictions" in state.log_history[-1]:
+                labels = state.log_history[-1]["labels"]
+                preds = state.log_history[-1]["predictions"]
+                mask = labels != -100
+                if mask.sum() > 0:
+                    correct = (preds.argmax(-1)[mask] == labels[mask]).sum()
+                    total = mask.sum()
+                    accuracy = (correct / total).item()
+                else:
+                    accuracy = None
+            else:
+                accuracy = None
             if self.collaborative_optimizer.local_step != self.last_reported_collaboration_step:
                 self.last_reported_collaboration_step = self.collaborative_optimizer.local_step
                 self.total_samples_processed += self.samples
@@ -162,6 +175,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
                     samples_accumulated=self.samples,
                     loss=self.loss,
                     mini_steps=self.steps,
+                    accuracy=accuracy,
                 )
                 logger.info(f"Step {self.collaborative_optimizer.local_step}")
                 logger.info(f"Your current contribution: {self.total_samples_processed} samples")
@@ -334,6 +348,12 @@ def main():
     if training_args.do_train:
         latest_checkpoint_dir = max(Path(training_args.output_dir).glob("checkpoint*"), default=None, key=os.path.getctime)
         trainer.train(model_path=latest_checkpoint_dir)
+
+    # Evaluation 추가
+    if training_args.do_eval:
+        logger.info("Running evaluation...")
+        eval_metrics = trainer.evaluate()
+        logger.info(f"Evaluation results: {eval_metrics}")
 
 
 if __name__ == "__main__":
