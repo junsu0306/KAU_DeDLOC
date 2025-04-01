@@ -4,7 +4,7 @@ import logging
 import os
 from dataclasses import asdict
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any , Optional
 
 import torch
 import transformers
@@ -121,6 +121,8 @@ class CollaborativeCallback(transformers.TrainerCallback):
         model: torch.nn.Module,
         local_public_key: bytes,
         statistics_expiration: float,
+        trainer: Optional[transformers.Trainer] = None  # 🔥 추가
+
     ):
         super().__init__()
         self.model = model
@@ -133,6 +135,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
         self.steps = 0
         self.loss = 0
         self.total_samples_processed = 0
+        self.trainer = trainer
 
     def on_train_begin(
         self, args: TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs
@@ -174,7 +177,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
              # ⬇️ 여기에 주기적 evaluation 추가
                 accuracy = None
                 trainer = kwargs.get("trainer", None)
-                if trainer is not None and self.collaborative_optimizer.local_step % 2 == 0:
+                if self.trainer is not None and self.collaborative_optimizer.local_step % 2 == 0:
                     eval_metrics = trainer.evaluate()
                     accuracy = eval_metrics.get("accuracy", None)
                     logger.info(f"[Eval@Step {self.collaborative_optimizer.local_step}] Accuracy: {accuracy}")
@@ -349,8 +352,21 @@ def main():
         train_dataset=tokenized_datasets["train"] if training_args.do_train else None,
         eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
         optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
-        callbacks=[CollaborativeCallback(dht, collaborative_optimizer, model, local_public_key, statistics_expiration)],
+       
     )
+
+        # ⬇️ 여기서 trainer를 전달
+    collab_callback = CollaborativeCallback(
+        dht=dht,
+        optimizer=collaborative_optimizer,
+        model=model,
+        local_public_key=local_public_key,
+        statistics_expiration=statistics_expiration,
+        trainer=trainer  # 🔥
+    )
+    trainer.add_callback(collab_callback)
+
+
     trainer.remove_callback(transformers.trainer_callback.PrinterCallback)
     trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
 
