@@ -22,6 +22,7 @@ from transformers.trainer_utils import is_main_process
 from transformers.trainer import Trainer
 from torch_optimizer import Lamb
 from sklearn.metrics import accuracy_score
+import wandb
 
 from transformers import BertForMaskedLM
 
@@ -178,7 +179,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
                 accuracy = None
                 
                 if self.trainer is not None and self.collaborative_optimizer.local_step % 2 == 0:
-                    eval_metrics = trainer.evaluate()
+                    eval_metrics = self.trainer.evaluate()
                     accuracy = eval_metrics.get("accuracy", None)
                     logger.info(f"[Eval@Step {self.collaborative_optimizer.local_step}] Accuracy: {accuracy}")
 
