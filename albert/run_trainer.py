@@ -354,9 +354,28 @@ def main():
         logger.info("Running evaluation...")
         eval_metrics = trainer.evaluate()
         logger.info(f"Evaluation results: {eval_metrics}")
-    
+
+    # wandb 로그 직접 기록
         if "accuracy" in eval_metrics:
-            wandb.log({"eval/accuracy": eval_metrics["accuracy"]})
+            wandb.log({"eval/accuracy": eval_metrics["accuracy"]}, step=trainer.state.global_step)
+
+    # DHT에 eval accuracy도 저장 (옵션)
+        metrics = metrics_utils.LocalMetrics(
+            step=trainer.state.global_step,
+            samples_per_second=0.0,
+            samples_accumulated=0,
+            loss=eval_metrics.get("eval_loss", 0.0),
+            mini_steps=1,
+            accuracy=eval_metrics.get("accuracy", None)
+        )
+        dht.store(
+            key=collaborative_optimizer.prefix + "_metrics",
+            subkey=local_public_key,
+            value=metrics.dict(),
+            expiration_time=hivemind.get_dht_time() + statistics_expiration,
+            return_future=True,
+        )
+
 
 
 if __name__ == "__main__":
