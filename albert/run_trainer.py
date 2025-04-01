@@ -343,28 +343,32 @@ def main():
         
       
 
-    trainer = TrainerWithIndependentShuffling(
-        model=model,
-        args=training_args,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        compute_metrics=compute_metrics,  # 추가
-        train_dataset=tokenized_datasets["train"] if training_args.do_train else None,
-        eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
-        optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
-       
-    )
-
-        # ⬇️ 여기서 trainer를 전달
+    # 1. 콜백 먼저 생성
     collab_callback = CollaborativeCallback(
         dht=dht,
         optimizer=collaborative_optimizer,
         model=model,
         local_public_key=local_public_key,
         statistics_expiration=statistics_expiration,
-        trainer=trainer  # 🔥
+        trainer=None  # 아직 trainer 없음
     )
-    trainer.add_callback(collab_callback)
+
+# 2. trainer 생성 시 콜백 전달
+    trainer = TrainerWithIndependentShuffling(
+        model=model,
+        args=training_args,
+        tokenizer=tokenizer,
+        data_collator=data_collator,
+        compute_metrics=compute_metrics,
+        train_dataset=...,
+        eval_dataset=...,
+        optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
+        callbacks=[collab_callback],
+    )
+
+# 3. 이후에 trainer 할당
+    collab_callback.trainer = trainer  # ✅ 이거 중요
+
 
 
     trainer.remove_callback(transformers.trainer_callback.PrinterCallback)
