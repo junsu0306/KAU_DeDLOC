@@ -127,6 +127,7 @@ class BertTrainingArguments(TrainingArguments):
     fp16: bool = True  # 처음에는 False로 설정 후 문제 없으면 True로 변경
     fp16_opt_level: str = "O2"
     do_train: bool = True
+    do_eval: bool = True
 
     logging_steps: int = 10
     save_total_limit: int = 2
