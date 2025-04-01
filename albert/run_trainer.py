@@ -169,6 +169,16 @@ class CollaborativeCallback(transformers.TrainerCallback):
                 self.last_reported_collaboration_step = self.collaborative_optimizer.local_step
                 self.total_samples_processed += self.samples
                 samples_per_second = self.collaborative_optimizer.performance_ema.samples_per_second
+
+                
+             # ⬇️ 여기에 주기적 evaluation 추가
+                accuracy = None
+                trainer = kwargs.get("trainer", None)
+                if trainer is not None and self.collaborative_optimizer.local_step % 2 == 0:
+                    eval_metrics = trainer.evaluate()
+                    accuracy = eval_metrics.get("accuracy", None)
+                    logger.info(f"[Eval@Step {self.collaborative_optimizer.local_step}] Accuracy: {accuracy}")
+
                 statistics = metrics_utils.LocalMetrics(
                     step=self.collaborative_optimizer.local_step,
                     samples_per_second=samples_per_second,
