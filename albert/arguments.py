@@ -136,7 +136,7 @@ class BertTrainingArguments(TrainingArguments):
 
     do_eval = True
     evaluation_strategy = "steps"  # "epoch"도 가능
-    eval_steps = 500       
+    eval_steps = 10       
 
     #Parital Staleness 추가
     partial_stale: bool = field(
