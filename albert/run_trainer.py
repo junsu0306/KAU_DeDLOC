@@ -246,13 +246,18 @@ class NoOpScheduler(LRSchedulerBase):
 def main():
     parser = HfArgumentParser((BertTrainingArguments, DatasetArguments, CollaborationArguments))
     training_args, dataset_args, collaboration_args = parser.parse_args_into_dataclasses()
-    run_name = f"peer-{local_public_key[:6].hex()}"  # 고유 이름 앞 6자리
+   # ✅ 먼저 local_public_key를 초기화
+    validators, local_public_key = metrics_utils.make_validators(collaboration_args_dict["experiment_prefix"])
+
+# ✅ 그 다음 wandb 초기화
+    run_name = f"peer-{local_public_key[:6].hex()}"
     wandb.init(
-        project="dedloc-bert",
-        name=run_name,            # ✅ 고유한 run 이름
-        group="bert-exp-001",     # (선택) 공통 그룹
+        project="dedloc-exp-001",
+        name=run_name,
+        group="bert-exp-001",
         reinit=True,
     )
+
 
      # ⬇️ 여기에 추가
     training_args.evaluation_strategy = "steps"
