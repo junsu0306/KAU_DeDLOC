@@ -341,6 +341,12 @@ def main():
         def get_train_dataloader(self) -> DataLoader:
             torch.manual_seed(hash(local_public_key))
             return super().get_train_dataloader()
+
+        def evaluate(self, *args, **kwargs):
+            output = super().evaluate(*args, **kwargs)
+            torch.cuda.empty_cache()  # ✅ GPU 메모리 캐시 정리
+            return output
+
         
       # 1. 콜백 먼저 생성
     collab_callback = CollaborativeCallback(
