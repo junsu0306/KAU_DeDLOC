@@ -135,7 +135,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
         self.loss = 0
         self.total_samples_processed = 0
         self.trainer = trainer  # ✅ 추가
-        self.eval_every = 50    # ✅ 평가 간격 (원하면 조정)
+        self.eval_every = 500    # ✅ 평가 간격 (원하면 조정)
 
     def on_train_begin(
         self, args: TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs
@@ -263,7 +263,7 @@ def main():
 
      # ⬇️ 여기에 추가
     training_args.evaluation_strategy = "steps"
-    training_args.eval_steps = 10
+    training_args.eval_steps = 500
     training_args.do_eval = True
     training_args.report_to = ["wandb"]
 
