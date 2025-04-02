@@ -246,15 +246,19 @@ class NoOpScheduler(LRSchedulerBase):
 def main():
     parser = HfArgumentParser((BertTrainingArguments, DatasetArguments, CollaborationArguments))
     training_args, dataset_args, collaboration_args = parser.parse_args_into_dataclasses()
-     # ✅ collaboration_args_dict 먼저 선언
+    # ✅ collaboration_args_dict 생성
     collaboration_args_dict = asdict(collaboration_args)
-   # ✅ 먼저 local_public_key를 초기화
-    validators, local_public_key = metrics_utils.make_validators(collaboration_args_dict["experiment_prefix"])
 
+    # ✅ wandb_project는 CollaborativeOptimizer와 무관하므로 제거
+    collaboration_args_dict.pop("wandb_project", None)
+
+    # ✅ local_public_key 생성
+    validators, local_public_key = metrics_utils.make_validators(collaboration_args_dict["experiment_prefix"])
 # ✅ 그 다음 wandb 초기화
+    project_name = collaboration_args.wandb_project or "default-peer-project"
     run_name = f"peer-{local_public_key[:6].hex()}"
     wandb.init(
-        project="dedloc-exp-001",
+        project=project_name,
         name=run_name,
         group="bert-exp-001",
         reinit=True,
@@ -263,7 +267,7 @@ def main():
 
      # ⬇️ 여기에 추가
     training_args.evaluation_strategy = "steps"
-    training_args.eval_steps = 500
+    training_args.eval_steps = 500 # 평가 주기 (500 스텝마다)
     training_args.do_eval = True
     training_args.report_to = ["wandb"]
 
