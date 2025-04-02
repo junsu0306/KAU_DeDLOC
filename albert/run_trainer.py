@@ -223,6 +223,12 @@ def main():
     parser = HfArgumentParser((BertTrainingArguments, DatasetArguments, CollaborationArguments))
     training_args, dataset_args, collaboration_args = parser.parse_args_into_dataclasses()
 
+     # ⬇️ 여기에 추가
+    training_args.evaluation_strategy = "steps"
+    training_args.eval_steps = 10
+    training_args.do_eval = True
+    training_args.report_to = ["wandb"]
+
     logger.info(f"Found {len(collaboration_args.initial_peers)} initial peers: {collaboration_args.initial_peers}")
     if len(collaboration_args.initial_peers) == 0:
         raise ValueError("Please specify at least one network endpoint in initial peers.")
@@ -330,6 +336,8 @@ def main():
     if training_args.do_train:
         latest_checkpoint_dir = max(Path(training_args.output_dir).glob("checkpoint*"), default=None, key=os.path.getctime)
         trainer.train(model_path=latest_checkpoint_dir)
+
+    
 
 
 if __name__ == "__main__":
