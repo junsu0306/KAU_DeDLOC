@@ -120,6 +120,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
         model: torch.nn.Module,
         local_public_key: bytes,
         statistics_expiration: float,
+        trainer=None,  # ✅ 추가
     ):
         super().__init__()
         self.model = model
@@ -132,6 +133,8 @@ class CollaborativeCallback(transformers.TrainerCallback):
         self.steps = 0
         self.loss = 0
         self.total_samples_processed = 0
+        self.trainer = trainer  # ✅ 추가
+        self.eval_every = 10    # ✅ 평가 간격 (원하면 조정)
 
     def on_train_begin(
         self, args: TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs
@@ -176,6 +179,10 @@ class CollaborativeCallback(transformers.TrainerCallback):
                     expiration_time=hivemind.get_dht_time() + self.statistics_expiration,
                     return_future=True,
                 )
+                 # ✅ 강제 평가: eval_every 스텝마다 수행
+                if self.trainer is not None and self.collaborative_optimizer.local_step % self.eval_every == 0:
+                    eval_result = self.trainer.evaluate()
+                    logger.info(f"📊 Eval result: {eval_result}")
 
         self.samples = self.collaborative_optimizer.local_samples_accumulated
 
@@ -317,7 +324,14 @@ def main():
         def get_train_dataloader(self) -> DataLoader:
             torch.manual_seed(hash(local_public_key))
             return super().get_train_dataloader()
+    
+    # 먼저 callback 인스턴스를 만든다
+    callback = CollaborativeCallback(
+        dht, collaborative_optimizer, model, local_public_key, statistics_expiration,
+        trainer=None  # placeholder, 나중에 할당할 예정
+)
 
+# Trainer 인스턴스 생성
     trainer = TrainerWithIndependentShuffling(
         model=model,
         args=training_args,
@@ -326,11 +340,15 @@ def main():
         train_dataset=tokenized_datasets["train"] if training_args.do_train else None,
         eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
         optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
-        callbacks=[CollaborativeCallback(dht, collaborative_optimizer, model, local_public_key, statistics_expiration)],
+        callbacks=[callback],  # ✅ 바로 위에서 만든 callback 인스턴스 사용
         compute_metrics=compute_metrics_mlm,
-    )
+)
+
     trainer.remove_callback(transformers.trainer_callback.PrinterCallback)
     trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
+
+# ✅ 이제 trainer 객체를 callback에 넣어줌
+    callback.trainer = trainer
 
     # Training
     if training_args.do_train:
