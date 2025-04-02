@@ -153,6 +153,9 @@ class CollaborativeCallback(transformers.TrainerCallback):
             return control
         self.previous_state = self.get_current_state()
 
+        logger.info(f"[Step {self.collaborative_optimizer.local_step}] on_step_end triggered")
+
+
         if state.log_history and "loss" in state.log_history[-1]:
             self.loss += state.log_history[-1]["loss"]
             self.steps += 1
