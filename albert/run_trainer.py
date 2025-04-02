@@ -246,6 +246,8 @@ class NoOpScheduler(LRSchedulerBase):
 def main():
     parser = HfArgumentParser((BertTrainingArguments, DatasetArguments, CollaborationArguments))
     training_args, dataset_args, collaboration_args = parser.parse_args_into_dataclasses()
+     # ✅ collaboration_args_dict 먼저 선언
+    collaboration_args_dict = asdict(collaboration_args)
    # ✅ 먼저 local_public_key를 초기화
     validators, local_public_key = metrics_utils.make_validators(collaboration_args_dict["experiment_prefix"])
 
