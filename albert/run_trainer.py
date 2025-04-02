@@ -340,6 +340,8 @@ def main():
     print("🔍 Running manual evaluation...")
     result = trainer.evaluate()
     print("✅ Eval result:", result)
+    print("eval_dataset size:", len(trainer.eval_dataset))
+
 
     
 
