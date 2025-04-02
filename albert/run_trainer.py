@@ -23,7 +23,7 @@ from transformers.trainer import Trainer
 from torch_optimizer import Lamb
 from sklearn.metrics import accuracy_score
 import wandb
-
+from datasets import Dataset
 from transformers import BertForMaskedLM
 
 
@@ -357,6 +357,11 @@ def main():
         statistics_expiration=statistics_expiration,
         trainer=None  # 아직 trainer 없음
     )   
+    if training_args.do_eval:
+        validation_dataset = tokenized_datasets["validation"]
+        validation_dataset = validation_dataset.shuffle(seed=42).select(range(500))
+    else:
+        validation_dataset = None
 
 # 2. trainer 생성 시 콜백 전달
     trainer = TrainerWithIndependentShuffling(
@@ -366,7 +371,7 @@ def main():
         data_collator=data_collator,
         compute_metrics=compute_metrics,
         train_dataset=tokenized_datasets["train"] if training_args.do_train else None,
-        eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
+        eval_dataset=validation_dataset,
         optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
         callbacks=[collab_callback],
     )
