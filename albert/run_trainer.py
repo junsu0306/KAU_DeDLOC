@@ -25,7 +25,7 @@ from torch_optimizer import Lamb
 from transformers import BertForMaskedLM
 
 import random
-
+import wandb
 import hivemind
 from arguments import CollaborationArguments, DatasetArguments, BertTrainingArguments
 import metrics_utils
@@ -135,7 +135,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
         self.loss = 0
         self.total_samples_processed = 0
         self.trainer = trainer  # ✅ 추가
-        self.eval_every = 10    # ✅ 평가 간격 (원하면 조정)
+        self.eval_every = 50    # ✅ 평가 간격 (원하면 조정)
 
     def on_train_begin(
         self, args: TrainingArguments, state: transformers.TrainerState, control: transformers.TrainerControl, **kwargs
@@ -194,6 +194,13 @@ class CollaborativeCallback(transformers.TrainerCallback):
 
                     eval_result = self.trainer.evaluate(eval_dataset=sampled_eval_dataset)
                     logger.info(f"📊 Eval result (subset 500): {eval_result}")
+                    wandb.log(
+                        {
+                        "eval_loss": eval_result.get("eval_loss"),
+                        "eval_accuracy": eval_result.get("eval_accuracy"),
+                        "step": self.collaborative_optimizer.local_step,
+                        }
+    )
         self.samples = self.collaborative_optimizer.local_samples_accumulated
 
         return control
