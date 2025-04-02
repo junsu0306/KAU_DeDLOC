@@ -276,6 +276,9 @@ def main():
         raise ValueError("Please specify at least one network endpoint in initial peers.")
 
     collaboration_args_dict = asdict(collaboration_args)
+
+    collaboration_args_dict.pop("wandb_project", None)  # ✅ 여기도 다시 필요함!
+
     setup_logging(training_args)
 
     # Set seed before initializing model.
