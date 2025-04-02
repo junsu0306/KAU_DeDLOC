@@ -153,9 +153,12 @@ class CollaborativeCallback(transformers.TrainerCallback):
             return control
         self.previous_state = self.get_current_state()
 
-        if state.log_history:
+        if state.log_history and "loss" in state.log_history[-1]:
             self.loss += state.log_history[-1]["loss"]
             self.steps += 1
+        else:
+            logger.debug(f"[Step {state.global_step}] No loss in log_history.")
+
             # ⬇️ 여기에 accuracy 계산 추가
             if "labels" in state.log_history[-1] and "predictions" in state.log_history[-1]:
                 labels = state.log_history[-1]["labels"]
@@ -334,7 +337,10 @@ def main():
         mask = labels != -100
         correct = (pred_ids[mask] == labels[mask]).sum()
         total = mask.sum()
-        accuracy = (correct / total).item() if total != 0 else 0.0
+        if total == 0:
+            accuracy = 0.0  # 🔥 여기! mask가 아예 없으면 0.0 리턴
+        else:
+            accuracy = (correct / total).item()
         return {"accuracy": accuracy}
 
     class TrainerWithIndependentShuffling(Trainer):
