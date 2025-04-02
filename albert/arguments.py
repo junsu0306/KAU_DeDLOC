@@ -142,6 +142,6 @@ class BertTrainingArguments(TrainingArguments):
     )
 
     eval_accumulation_steps: Optional[int] = field(  # ✅ 여기 추가!
-        default=32,
+        default=8,
         metadata={"help": "Number of eval steps to accumulate before transferring to CPU"}
     )
