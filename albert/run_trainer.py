@@ -296,6 +296,17 @@ def main():
         )
     # =============================================
 
+    def compute_metrics_mlm(eval_pred):
+        import numpy as np
+        logits, labels = eval_pred  # (batch_size, seq_len, vocab_size), (batch_size, seq_len)
+        predictions = np.argmax(logits, axis=-1)
+        mask = labels != -100  # -100 위치 무시
+        correct = (predictions[mask] == labels[mask]).sum()
+        total = mask.sum()
+        accuracy = correct / total if total > 0 else 0.0
+        return {"accuracy": float(accuracy)}
+
+
     class TrainerWithIndependentShuffling(Trainer):
         def get_train_dataloader(self) -> DataLoader:
             torch.manual_seed(hash(local_public_key))
@@ -310,6 +321,7 @@ def main():
         eval_dataset=tokenized_datasets["validation"] if training_args.do_eval else None,
         optimizers=(collaborative_optimizer, NoOpScheduler(collaborative_optimizer)),
         callbacks=[CollaborativeCallback(dht, collaborative_optimizer, model, local_public_key, statistics_expiration)],
+        compute_metrics=compute_metrics_mlm,
     )
     trainer.remove_callback(transformers.trainer_callback.PrinterCallback)
     trainer.remove_callback(transformers.trainer_callback.ProgressCallback)
