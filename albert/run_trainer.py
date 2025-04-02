@@ -336,6 +336,10 @@ def main():
     if training_args.do_train:
         latest_checkpoint_dir = max(Path(training_args.output_dir).glob("checkpoint*"), default=None, key=os.path.getctime)
         trainer.train(model_path=latest_checkpoint_dir)
+        # ✅ 수동으로 evaluate() 호출 (정상 동작 여부 확인)
+    print("🔍 Running manual evaluation...")
+    result = trainer.evaluate()
+    print("✅ Eval result:", result)
 
     
 
