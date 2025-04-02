@@ -153,8 +153,12 @@ class CollaborativeCallback(transformers.TrainerCallback):
         self.previous_state = self.get_current_state()
 
         if state.log_history:
-            self.loss += state.log_history[-1]["loss"]
-            self.steps += 1
+            last_log = state.log_history[-1]
+
+            if "loss" in last_log:
+                self.loss += last_log["loss"]
+                self.steps += 1
+
             if self.collaborative_optimizer.local_step != self.last_reported_collaboration_step:
                 self.last_reported_collaboration_step = self.collaborative_optimizer.local_step
                 self.total_samples_processed += self.samples
