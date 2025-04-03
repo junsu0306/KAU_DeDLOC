@@ -193,7 +193,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
                     sampled_eval_dataset = torch.utils.data.Subset(full_dataset, sampled_indices)
 
                     eval_result = self.trainer.evaluate(eval_dataset=sampled_eval_dataset)
-                    logger.info(f"📊 Eval result (subset 500): {eval_result}")
+                    logger.info(f"📊 Eval result (subset 300): {eval_result}")
                     wandb.log(
                         {
                         "eval_loss": eval_result.get("eval_loss"),
