@@ -186,9 +186,9 @@ class CollaborativeCallback(transformers.TrainerCallback):
                 )
                  # ✅ 강제 평가: eval_every 스텝마다 수행
                 if self.trainer is not None and self.collaborative_optimizer.local_step % self.eval_every == 0:
-    # ✅ 무작위로 500개만 샘플링해서 평가
+                    # ✅ 무작위로 500개만 샘플링해서 평가
                     full_dataset = self.trainer.eval_dataset
-                    num_samples = min(500, len(full_dataset))
+                    num_samples = min(300, len(full_dataset))
                     sampled_indices = random.sample(range(len(full_dataset)), num_samples)
                     sampled_eval_dataset = torch.utils.data.Subset(full_dataset, sampled_indices)
 
