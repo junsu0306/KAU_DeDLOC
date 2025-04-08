@@ -39,7 +39,7 @@ class AveragerArguments:
     default_refresh_period: float = field(
         default=3, metadata={"help": "Attempt to fetch collaboration state every this often until successful"}
     )
-    expected_drift_peers: float = field(
+    expected_drift_peers: float = field (
         default=3, metadata={"help": "Trainer assumes that this many new peers can join per step"}
     )
     expected_drift_rate: float = field(
