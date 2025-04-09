@@ -7,7 +7,7 @@ DATASET_PATH = "./data/bert_tiny_tokenized_wikitext103"  # 이건 너의 기준�
 SPLIT_NAME = "validation"
 OUTPUT_DIR = "./eval_subsets"
 NUM_SUBSETS = 10
-SAMPLES_PER_SUBSET = 300
+SAMPLES_PER_SUBSET = 150
 SEED = 42
 
 

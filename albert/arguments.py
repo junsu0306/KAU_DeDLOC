@@ -113,12 +113,12 @@ class DatasetArguments:
 class BertTrainingArguments(TrainingArguments):
     dataloader_num_workers: int = 4
     per_device_train_batch_size: int = 128  # BERT-tiny는 작은 모델이므로 배치 크기 증가 가능
-    per_device_eval_batch_size: int = 2
+    per_device_eval_batch_size: int = 1
     gradient_accumulation_steps: int = 1  # 작은 모델이므로 gradient accumulation을 낮춰도 됨
     seq_length: int = 128  # BERT-tiny는 짧은 문장에 최적화되어 있으므로 128로 조정
 
     max_steps: int = 1500_000  # 기존에서 더 늘림림
-    learning_rate: float = 0.0008  # 기존 0.00176 → 0.0003으로 조정
+    learning_rate: float = 0.0010  # 기존 0.00176 → 0.0003으로 조정
     warmup_steps: int = 5000
     adam_epsilon: float = 1e-6
     weight_decay: float = 0.01
