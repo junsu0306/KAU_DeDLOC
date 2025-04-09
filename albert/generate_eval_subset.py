@@ -6,8 +6,8 @@ import os
 DATASET_PATH = "./data/bert_tiny_tokenized_wikitext103"  # 이건 너의 기준에 맞게 조정 가능
 SPLIT_NAME = "validation"
 OUTPUT_DIR = "./eval_subsets"
-NUM_SUBSETS = 10
-SAMPLES_PER_SUBSET = 150
+NUM_SUBSETS = 30
+SAMPLES_PER_SUBSET = 100
 SEED = 42
 
 

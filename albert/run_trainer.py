@@ -167,7 +167,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
                     step=self.collaborative_optimizer.local_step,
                     samples_per_second=samples_per_second,
                     samples_accumulated=self.samples,
-                    loss=self.loss,
+                    loss=float(self.loss or 0.0),
                     mini_steps=self.steps,
                 )
                 logger.info(f"Step {self.collaborative_optimizer.local_step}")
@@ -187,7 +187,7 @@ class CollaborativeCallback(transformers.TrainerCallback):
                  # ✅ 강제 평가: eval_every 스텝마다 수행
                 if self.trainer is not None and self.collaborative_optimizer.local_step % 500 == 0:
                 
-                    idx = random.randint(0, 9)
+                    idx = random.randint(0, 29)
                     eval_dataset = load_from_disk(f"./eval_subsets/val_split_{idx}")
                     eval_result = self.trainer.evaluate(eval_dataset=eval_dataset)
                     logger.info(f"📊 Eval result (subset {idx}): {eval_result}")
