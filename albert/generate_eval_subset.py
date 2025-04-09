@@ -10,11 +10,18 @@ NUM_SUBSETS = 10
 SAMPLES_PER_SUBSET = 300
 SEED = 42
 
+#기존 validation 크기
+print("Number of validation samples:", len(validation))
+
 # 디렉토리 생성
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # 데이터셋 불러오기
 dataset = load_from_disk(DATASET_PATH)[SPLIT_NAME]
+#기존 validation 크기
+validation = dataset["validation"]
+print("Number of validation samples:", len(validation))
+
 
 # 랜덤 고정
 random.seed(SEED)
