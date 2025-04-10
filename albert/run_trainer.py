@@ -363,7 +363,7 @@ def main():
         mask = labels != -100
         correct = (predictions[mask] == labels[mask]).sum()
         total = mask.sum()
-        ccuracy = correct / total if total > 0 else 0.0
+        accuracy = correct / total if total > 0 else 0.0
         return {"accuracy": float(accuracy)}
 
 
