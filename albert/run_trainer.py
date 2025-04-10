@@ -244,6 +244,10 @@ class NoOpScheduler(LRSchedulerBase):
 def main():
     parser = HfArgumentParser((BertTrainingArguments, DatasetArguments, CollaborationArguments))
     training_args, dataset_args, collaboration_args = parser.parse_args_into_dataclasses()
+
+    training_args.fp16 = True
+    training_args.fp16_full_eval = True  # ✅ 여기 추가
+    
     # ✅ collaboration_args_dict 생성
     collaboration_args_dict = asdict(collaboration_args)
 
@@ -347,13 +351,21 @@ def main():
 
     def compute_metrics_mlm(eval_pred):
         import numpy as np
-        logits, labels = eval_pred  # (batch_size, seq_len, vocab_size), (batch_size, seq_len)
+        logits, labels = eval_pred
+
+    # ✅ 명확히 GPU에서 CPU로 변환
+        if hasattr(logits, "cpu"):
+            logits = logits.cpu().numpy()
+        if hasattr(labels, "cpu"):
+            labels = labels.cpu().numpy()
+
         predictions = np.argmax(logits, axis=-1)
-        mask = labels != -100  # -100 위치 무시
+        mask = labels != -100
         correct = (predictions[mask] == labels[mask]).sum()
         total = mask.sum()
-        accuracy = correct / total if total > 0 else 0.0
+        ccuracy = correct / total if total > 0 else 0.0
         return {"accuracy": float(accuracy)}
+
 
 
     class TrainerWithIndependentShuffling(Trainer):
